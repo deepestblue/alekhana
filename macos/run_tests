@@ -1,0 +1,65 @@
+#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+PROGRAM=$(basename $0)
+TMPDIR=$(mktemp -d -t $PROGRAM)
+
+SCRIPTDIR=$(dirname $0)
+
+while getopts e:r:t: OPTLET; do
+  case $OPTLET in
+    e)
+        MASTER_IMAGES=$OPTARG
+        ;;
+    t)
+        TYPEFACE=$OPTARG
+        ;;
+    r)
+        RASTERISER=$OPTARG
+        ;;
+    *)
+        exit 2
+        ;;
+  esac
+done
+
+rsync --recursive --checksum $MASTER_IMAGES $TMPDIR/expected/
+
+mkdir -p $TMPDIR/actual
+$SCRIPTDIR/generate_images -d $TMPDIR/actual -r ${RASTERISER} -t ${TYPEFACE}
+
+mkdir -p $TMPDIR/diff
+
+for actual in $(find $TMPDIR/actual -type f); do
+    temp=${actual#${TMPDIR}}
+    temp=${temp#/actual/}
+    expected=$TMPDIR/expected/$temp
+    diff=$TMPDIR/diff/$temp
+
+    if cmp --quiet $expected $actual; then
+        continue
+    fi
+
+    mkdir -p $(dirname $diff)
+
+    compare -compose src $expected $actual $diff || {
+        RESULT=$?
+        # ImageMagick compare returns 0 for identical, 1 for different and 2 for error
+        [ $RESULT -gt 1 ] && exit $RESULT
+    }
+done
+
+count=$(find $TMPDIR/diff -type f | wc -l)
+
+if [ $count -eq 0 ]; then
+    rm -r $TMPDIR
+else
+    echo $TMPDIR/
+    pushd $TMPDIR > /dev/null
+    find diff -type f
+    popd > /dev/null
+fi
+exit $count

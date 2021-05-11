@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -o errexit
+set -o nounset
+
+SCRIPTDIR=$(dirname $0)
+
+while getopts r:d:t: OPTLET; do
+  case $OPTLET in
+    d)
+        OUTPUT_ROOT=$OPTARG
+        ;;
+    t)
+        TYPEFACE=$OPTARG
+        ;;
+    r)
+        RASTERISER=$OPTARG
+        ;;
+    *)
+        exit 2
+        ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
+mkdir -p $OUTPUT_ROOT
+
+for i in $SCRIPTDIR/../cases/*.txt; do
+    j=${i#${SCRIPTDIR}/../cases/}
+    output_dir=$OUTPUT_ROOT/${j%.txt}
+    mkdir -p $output_dir
+    rm -f $output_dir/*
+    $RASTERISER $i $output_dir $TYPEFACE
+done
