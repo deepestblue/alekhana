@@ -1,0 +1,33 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build_macos:
+    name: Compare rasterised images on MacOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: brew install qt@6 boost
+        env:
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+      - name: Build and run test
+        run: make
+        working-directory: macos
+  build_windows:
+    name: Compare rasterised images on Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Native Tools Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Build and run test
+        run: nmake
+        working-directory: windows
