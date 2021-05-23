@@ -1,0 +1,9 @@
+macos/rasterise_text.o
+macos/qt/rasterise_text_impl.o
+macos/qt/rasterise_text
+macos/coretext/rasterise_text_impl.o
+macos/coretext/rasterise_text
+windows/rasterise_text.exe
+windows/rasterise_text.obj
+windows/rasterise_text_impl.obj
+.vscode
