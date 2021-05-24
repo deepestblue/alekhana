@@ -52,7 +52,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: MacOS distrib
-          path: alekhana
+          path: alekhana_dist
       - name: Download Windows artifacts
         uses: actions/download-artifact@v2
         with:
