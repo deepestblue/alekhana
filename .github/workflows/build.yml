@@ -52,16 +52,18 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: MacOS binaries
-          path: bin
+          path: alekhana
       - name: Download Windows artifacts
         uses: actions/download-artifact@v2
         with:
           name: Windows binaries
-          path: bin
+          path: alekhana
+      - name: Zip up artifacts
+        run: zip -r alekhana.zip alekhana
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
           prerelease: true
           title: "Development Build"
-          files: bin/*
+          files: alekhana.zip
