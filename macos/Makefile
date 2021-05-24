@@ -17,7 +17,14 @@ qt/rasterise_text: ${QTOBJECTS}
 coretext/rasterise_text: ${CORETEXTOBJECTS}
 	${CXX} ${LDFLAGS} ${CORETEXTOBJECTS} -framework ImageIO -framework CoreGraphics -framework CoreText -framework CoreServices -framework CoreFoundation -o $@
 
-clean:
-	${RM} ${QTOBJECTS} ${CORETEXTOBJECTS} ${BINS}
+dist: build
+	mkdir -p ../bin
+	cp qt/rasterise_text ../bin/rasterise_text_qt
+	cp coretext/rasterise_text ../bin/rasterise_text_coretext
+	cp generate_images ../bin/
+	cp run_tests ../bin/
 
-.PHONY: build clean
+clean:
+	${RM} ${QTOBJECTS} ${CORETEXTOBJECTS} ${BINS} bin/*
+
+.PHONY: build clean dist

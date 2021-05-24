@@ -15,6 +15,12 @@ rasterise_text.exe: $(OBJECTS)
 regenerate_masters: rasterise_text.exe
 	$(PS) ./generate_images.ps1 -Rasteriser ./rasterise_text.exe -OutputRoot ./master_images -TypeFace $(TYPEFACEPATH)
 
+dist: build
+	if not exist ..\bin mkdir ..\bin
+	copy rasterise_text.exe ..\bin
+	copy *.ps1 ..\bin
+	copy TestApiCore.* ..\bin
+
 clean:
 	$(PS) (Remove-Item -Force rasterise_text.exe, *.obj -ErrorAction Ignore)
 

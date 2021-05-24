@@ -8,7 +8,7 @@ on:
 
 jobs:
   build_macos:
-    name: Compare rasterised images on MacOS
+    name: Build MacOS
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -17,17 +17,53 @@ jobs:
         run: brew install qt@6 boost
         env:
           HOMEBREW_NO_INSTALL_CLEANUP: 1
-      - name: Build and run test
-        run: make
+      - name: Build and package
+        run: make install
         working-directory: macos
+      - name: Upload MacOS artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: MacOS binaries
+          path: bin/*
+          retention-days: 1
   build_windows:
-    name: Compare rasterised images on Windows
+    name: Build Windows
     runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Native Tools Command Prompt
         uses: ilammy/msvc-dev-cmd@v1
-      - name: Build and run test
-        run: nmake
+      - name: Build and package
+        run: nmake install
         working-directory: windows
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Windows binaries
+          path: bin/*
+          retention-days: 1
+  package:
+    needs: |
+      build_macos
+      build_windows
+    name: Package up artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download MacOS artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: MacOS binaries
+          path: bin
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: Windows binaries
+          path: bin
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: bin/*
