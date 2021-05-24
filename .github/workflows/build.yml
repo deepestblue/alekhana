@@ -23,8 +23,8 @@ jobs:
       - name: Upload MacOS artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: MacOS binaries
-          path: bin/*
+          name: MacOS distrib
+          path: dist/*
           retention-days: 1
   build_windows:
     name: Build Windows
@@ -40,8 +40,8 @@ jobs:
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: Windows binaries
-          path: bin/*
+          name: Windows distrib
+          path: dist/*
           retention-days: 1
   package_and_release:
     needs: [build_macos, build_windows]
@@ -51,19 +51,19 @@ jobs:
       - name: Download MacOS artifacts
         uses: actions/download-artifact@v2
         with:
-          name: MacOS binaries
+          name: MacOS distrib
           path: alekhana
       - name: Download Windows artifacts
         uses: actions/download-artifact@v2
         with:
-          name: Windows binaries
-          path: alekhana
+          name: Windows distrib
+          path: alekhana_dist
       - name: Zip up artifacts
-        run: zip -r alekhana.zip alekhana
+        run: zip -r alekhana_dist.zip alekhana_dist
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
           prerelease: true
           title: "Development Build"
-          files: alekhana.zip
+          files: alekhana_dist.zip

@@ -16,12 +16,13 @@ regenerate_masters: rasterise_text.exe
 	$(PS) ./generate_images.ps1 -Rasteriser ./rasterise_text.exe -OutputRoot ./master_images -TypeFace $(TYPEFACEPATH)
 
 dist: build
-	if not exist ..\bin mkdir ..\bin
-	copy rasterise_text.exe ..\bin
-	copy *.ps1 ..\bin
-	copy TestApiCore.* ..\bin
+	if not exist ..\dist mkdir ..\dist
+	copy rasterise_text.exe ..\dist
+	copy *.ps1 ..\dist
+	copy TestApiCore.* ..\dist
 
 clean:
-	$(PS) (Remove-Item -Force rasterise_text.exe, *.obj -ErrorAction Ignore)
+	$(PS) (Remove-Item -Force rasterise_text.exe, *.obj, ..\dist\* -ErrorAction Ignore)
+	rmdir ..\dist\
 
 .PHONY: clean build
