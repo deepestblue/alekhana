@@ -18,7 +18,7 @@ jobs:
         env:
           HOMEBREW_NO_INSTALL_CLEANUP: 1
       - name: Build and package
-        run: make install
+        run: make dist
         working-directory: macos
       - name: Upload MacOS artifacts
         uses: actions/upload-artifact@v2
@@ -35,7 +35,7 @@ jobs:
       - name: Native Tools Command Prompt
         uses: ilammy/msvc-dev-cmd@v1
       - name: Build and package
-        run: nmake install
+        run: nmake dist
         working-directory: windows
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v2
