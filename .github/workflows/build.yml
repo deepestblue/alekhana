@@ -43,10 +43,8 @@ jobs:
           name: Windows binaries
           path: bin/*
           retention-days: 1
-  package:
-    needs: |
-      build_macos
-      build_windows
+  package_and_release:
+    needs: [build_macos, build_windows]
     name: Package up artifacts
     runs-on: ubuntu-latest
     steps:
