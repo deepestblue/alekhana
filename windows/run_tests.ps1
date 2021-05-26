@@ -7,7 +7,8 @@ using namespace Microsoft.Test.VisualVerification
 Param(
     [Parameter(Mandatory=$true)][string]$typefacePath,
     [Parameter(Mandatory=$true)][string]$rasteriser,
-    [Parameter(Mandatory=$true)][string]$masterImages
+    [Parameter(Mandatory=$true)][string]$masterImages,
+    [Parameter(Mandatory=$true)][string]$testCases
 )
 
 $ErrorActionPreference="Stop"
@@ -54,7 +55,7 @@ $tmpDir = New-TemporaryDirectory
 robocopy $masterImages "$tmpDir/expected" /MIR /Z /UNICODE /NFL /NDL /NP /NJH /NJS /NS /NC
 
 MkDirIfNotExists "$tmpDir/actual"
-& "$PSScriptRoot/generate_images.ps1" -Rasteriser $rasteriser -OutputRoot "$tmpDir/actual" -TypeFace $typefacePath
+& "$PSScriptRoot/generate_images.ps1" -Rasteriser $rasteriser -OutputRoot "$tmpDir/actual" -TypeFace $typefacePath -TestCases $testCases
 
 MkDirIfNotExists "$tmpDir/diff"
 

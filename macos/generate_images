@@ -5,7 +5,7 @@ set -o nounset
 
 SCRIPTDIR=$(dirname $0)
 
-while getopts r:d:t: OPTLET; do
+while getopts r:d:t:c: OPTLET; do
   case $OPTLET in
     d)
         OUTPUT_ROOT=$OPTARG
@@ -15,6 +15,9 @@ while getopts r:d:t: OPTLET; do
         ;;
     r)
         RASTERISER=$OPTARG
+        ;;
+    c)
+        CASES=$OPTARG
         ;;
     *)
         exit 2
@@ -26,8 +29,8 @@ shift $((OPTIND-1))
 
 mkdir -p $OUTPUT_ROOT
 
-for i in $SCRIPTDIR/../cases/*.txt; do
-    j=${i#${SCRIPTDIR}/../cases/}
+for i in $CASES/*.txt; do
+    j=${i#${CASES}/}
     output_dir=$OUTPUT_ROOT/${j%.txt}
     mkdir -p $output_dir
     rm -f $output_dir/*

@@ -3,7 +3,8 @@
 Param(
     [Parameter(Mandatory=$true)][string]$typefacePath,
     [Parameter(Mandatory=$true)][string]$rasteriser,
-    [Parameter(Mandatory=$true)][string]$outputRoot
+    [Parameter(Mandatory=$true)][string]$outputRoot,
+    [Parameter(Mandatory=$true)][string]$testCases
 )
 
 $ErrorActionPreference="Stop"
@@ -18,9 +19,9 @@ function MkDirIfNotExists() {
 
 MkDirIfNotExists $outputRoot
 
-Get-ChildItem "$PSScriptRoot/../cases" -Name *txt | ForEach-Object {
+Get-ChildItem $testCases -Name *txt | ForEach-Object {
     $dirName = $_ -replace '.txt', ''
     $outputDir = "$outputRoot/$dirName"
     MkDirIfNotExists $outputDir
-    & $rasteriser "$PSScriptRoot/../cases/$_" $outputDir $typefacePath
+    & $rasteriser "$testCases/$_" $outputDir $typefacePath
 }

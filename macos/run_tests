@@ -9,7 +9,7 @@ TMPDIR=$(mktemp -d -t $PROGRAM)
 
 SCRIPTDIR=$(dirname $0)
 
-while getopts e:r:t: OPTLET; do
+while getopts e:r:t:c: OPTLET; do
   case $OPTLET in
     e)
         MASTER_IMAGES=$OPTARG
@@ -20,16 +20,19 @@ while getopts e:r:t: OPTLET; do
     r)
         RASTERISER=$OPTARG
         ;;
+    c)
+        CASES=$OPTARG
+        ;;
     *)
         exit 2
         ;;
   esac
 done
 
-rsync --recursive --checksum $MASTER_IMAGES $TMPDIR/expected/
+rsync --recursive --checksum $MASTER_IMAGES/ $TMPDIR/expected/
 
 mkdir -p $TMPDIR/actual
-$SCRIPTDIR/generate_images -d $TMPDIR/actual -r ${RASTERISER} -t ${TYPEFACE}
+$SCRIPTDIR/generate_images -d $TMPDIR/actual -r $RASTERISER -t $TYPEFACE -c $CASES
 
 mkdir -p $TMPDIR/diff
 
