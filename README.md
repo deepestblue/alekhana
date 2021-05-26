@@ -10,6 +10,10 @@ Supported platforms: MacOS (Qt6 and CoreText engines), Windows (DirectWrite engi
 
 I implemented this originally to help test [Sampradaya](https://github.com/deepestblue/Sampradaya), but split it out into its own project when I figured it may be independently useful.
 
+## Licensing
+
+On Windows, this tool depends on and bundles Microsoft's [TestApi library](https://github.com/microsoft/TestApi), released under the [Microsoft Public License](https://github.com/microsoft/TestApi/blob/master/LICENSE). The rest of the software is under the [AGPL‐3.0](https://github.com/deepestblue/alekhana/blob/main/LICENCE).
+
 ## Usage
 
 ### On MacOS
