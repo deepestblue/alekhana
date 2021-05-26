@@ -17,7 +17,7 @@ regenerate_masters: rasterise_text.exe
 
 dist: build
 	if not exist ..\dist mkdir ..\dist
-	copy rasterise_text.exe ..\dist
+	copy rasterise_text.exe ..\dist\rasterise_text_windows.exe
 	copy *.ps1 ..\dist
 	copy TestApiCore.* ..\dist
 
