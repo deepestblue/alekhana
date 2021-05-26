@@ -58,9 +58,13 @@ jobs:
         with:
           name: Windows distrib
           path: alekhana_dist
+      # Workaround for https://github.com/actions/upload-artifact/issues/38
+      - name: Fix perms
+        run: chmod +x alekhana_dist/*
       - name: Zip up artifacts
         run: zip -r alekhana_dist.zip alekhana_dist
-      - uses: "marvinpinto/action-automatic-releases@latest"
+      - name: Push latest release to Github
+        uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
