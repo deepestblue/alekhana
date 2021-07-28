@@ -1,8 +1,10 @@
 #!/bin/bash
 
 set -o errexit
-set -o nounset
 set -o pipefail
+
+# Unfortunately, this collides with the fact that GITHUB_ACTIONS isn't set. bash 4.2 includes -v, but isn't easily available on Macos
+# set -o nounset
 
 PROGRAM=$(basename $0)
 TMPDIR=$(mktemp -d -t $PROGRAM)
