@@ -59,17 +59,15 @@ done
 
 count=$(find $TMPDIR/diff -type f | wc -l)
 
-if [ $count -eq 0 ]; then
-    rm -r $TMPDIR
-else
+if [ $count -gt 0 ]; then
     echo $TMPDIR/
     pushd $TMPDIR > /dev/null
     find diff -type f
     popd > /dev/null
-fi
 
-if [ "$GITHUB_ACTIONS" = true ]; then
-    mv $TMPDIR ./output/
+    if [ "$GITHUB_ACTIONS" = true ]; then
+        mv $TMPDIR ./output/
+    fi
 fi
 
 exit $count
