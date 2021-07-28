@@ -83,4 +83,8 @@ Get-ChildItem "$tmpDir/diff" -Recurse | ForEach-Object {
     Write-Output $_.FullName
 }
 
+if ($Env:GITHUB_ACTIONS -eq "true") {
+    Move-Item $tmpDir ./output
+}
+
 exit $count

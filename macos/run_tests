@@ -65,4 +65,8 @@ else
     find diff -type f
     popd > /dev/null
 fi
+
+if [ "$GITHUB_ACTIONS" = true ]; then
+    mv $TMPDIR ./output/
+fi
 exit $count
