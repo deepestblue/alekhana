@@ -67,8 +67,7 @@ else
 fi
 
 if [ "$GITHUB_ACTIONS" = true ]; then
-    echo "I'm here"
-    echo "mv $TMPDIR ./output/"
     mv $TMPDIR ./output/
 fi
+
 exit $count
