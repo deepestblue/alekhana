@@ -107,8 +107,8 @@ public:
     ) {
 #ifdef DEBUG
         const auto typeface_name = app_font.get_typeface_name().toStdString();
-        auto metrics_format = boost::format{"Typeface: %1%, ascent: %2%, descent: %3%, leading: %4%."s};
-        cout << metrics_format % typeface_name % metrics.ascent() % metrics.descent() % metrics.leading() << '\n';
+        auto metrics_format = boost::format{"Typeface: %1%, ascent: %2%, descent: %3%, leading: %4%.\n"s};
+        cout << metrics_format % typeface_name % metrics.ascent() % metrics.descent() % metrics.leading();
 #endif
 
         qfont.setStyleStrategy(
