@@ -12,6 +12,7 @@
 
 #ifdef DEBUG
 #include <iostream>
+#include <format>
 #endif
 
 #pragma warning(default: 5045)
@@ -393,11 +394,14 @@ public:
         );
 
 #ifdef DEBUG
-        cout << "Metrics for "s << text << " are as follows:"s << '\n';
-        cout << "Width: "s << metrics.width << '\n';
-        cout << "Height: "s << metrics.height << '\n';
-        cout << "Overhang left: "s << overhang_metrics.left << '\n';
-        cout << "Overhang top: "s << overhang_metrics.top << '\n';
+        cout << format(
+            "Metrics for {} are as follows:\nWidth: {}\nHeight: {}\nOverhang left: {}\nOverhang top: {}\n"s,
+            text,
+            metrics.width,
+            metrics.height,
+            overhang_metrics.left,
+            overhang_metrics.top
+        );
 #endif
 
         auto wic_bitmap = ComPtr<IWICBitmap>{};
