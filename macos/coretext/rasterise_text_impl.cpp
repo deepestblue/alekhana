@@ -12,6 +12,7 @@
 
 using namespace std;
 
+#include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #include <CoreServices/CoreServices.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreText/CoreText.h>
@@ -266,7 +267,7 @@ public:
         const auto imageDestination = CFReleaser<CGImageDestinationRef>(
             CGImageDestinationCreateWithURL(
                 destURL.get(),
-                kUTTypePNG,
+                static_cast<CFStringRef>(UTTypePNG.identifier),
                 1,
                 nullptr
             ),
