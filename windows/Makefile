@@ -23,6 +23,6 @@ dist: build
 
 clean:
 	$(PS) (Remove-Item -Force rasterise_text.exe, *.obj, ..\dist\* -ErrorAction Ignore)
-	rmdir ..\dist\
+	if exist ..\dist rmdir /Q ..\dist
 
 .PHONY: clean build
