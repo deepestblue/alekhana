@@ -21,7 +21,7 @@ jobs:
         run: make dist
         working-directory: macos
       - name: Upload MacOS artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: MacOS distrib
           path: dist/*
@@ -38,7 +38,7 @@ jobs:
         run: nmake dist
         working-directory: windows
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Windows distrib
           path: dist/*
@@ -49,12 +49,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download MacOS artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: MacOS distrib
           path: alekhana_dist
       - name: Download Windows artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: Windows distrib
           path: alekhana_dist
