@@ -16,7 +16,7 @@ using namespace std;
 
 #include "../../rasterise_text.hpp"
 
-void
+static auto
 throw_if_failed(
     bool exp
 ) {

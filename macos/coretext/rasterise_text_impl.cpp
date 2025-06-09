@@ -21,7 +21,7 @@ using namespace std;
 
 #include "../../rasterise_text.hpp"
 
-auto
+static auto
 throw_if_failed(
     bool exp
 ) {
@@ -70,7 +70,7 @@ CFReleaser(
     return ret;
 }
 
-auto
+static auto
 CFStringFromString(
     const string &in
 ) {
@@ -85,7 +85,7 @@ CFStringFromString(
         );
 }
 
-auto
+static auto
 create_font_from_file(
     const path &typeface_file_path
 ) {
