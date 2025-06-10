@@ -395,7 +395,7 @@ public:
 
 #ifdef DEBUG
         cout << format(
-            "Metrics for {} are as follows:\nWidth: {}\nHeight: {}\nOverhang left: {}\nOverhang top: {}\n"s,
+            "Metrics for {} are as follows:\nWidth: {}\nHeight: {}\nOverhang left: {}\nOverhang top: {}\n",
             text,
             metrics.width,
             metrics.height,

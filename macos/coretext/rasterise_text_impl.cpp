@@ -3,11 +3,9 @@
 #include <filesystem>
 #include <cmath>
 
-//#define DEBUG 1
-
 #ifdef DEBUG
 #include <iostream>
-#include <boost/format.hpp>
+#include <format>
 #endif
 
 using namespace std;
@@ -195,8 +193,14 @@ public:
         );
 
 #ifdef DEBUG
-        auto bounding_box_format = boost::format{"For string %1%, bounding box: X: %2%, Width: %3%, Y: %4%, Height: %5%.\n"s};
-        cout << bounding_box_format % text % bounding_box.origin.x % bounding_box.size.width % bounding_box.origin.y % bounding_box.size.height;
+        cout << format(
+            "For string {}, bounding box: X: {}, Width: {}, Y: {}, Height: {}.\n",
+            text,
+            bounding_box.origin.x,
+            bounding_box.size.width,
+            bounding_box.origin.y,
+            bounding_box.size.height
+        );
 #endif
 
         const auto context_guard = CFReleaser<CGContextRef>(

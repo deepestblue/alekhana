@@ -1,10 +1,8 @@
 #include <filesystem>
 
-//#define DEBUG
-
 #ifdef DEBUG
 #include <iostream>
-#include <boost/format.hpp>
+#include <format>
 #endif
 
 using namespace std;
@@ -107,8 +105,13 @@ public:
     ) {
 #ifdef DEBUG
         const auto typeface_name = app_font.get_typeface_name().toStdString();
-        auto metrics_format = boost::format{"Typeface: %1%, ascent: %2%, descent: %3%, leading: %4%.\n"s};
-        cout << metrics_format % typeface_name % metrics.ascent() % metrics.descent() % metrics.leading();
+        cout << format(
+            "Typeface: {}, ascent: {}, descent: {}, leading: {}.\n",
+            typeface_name,
+            metrics.ascent(),
+            metrics.descent(),
+            metrics.leading()
+        );
 #endif
 
         qfont.setStyleStrategy(
@@ -154,8 +157,14 @@ private:
             [&]() {
                 const auto rect = metrics.tightBoundingRect(qtext);
 #ifdef DEBUG
-                auto bounding_rect_format = boost::format{"For string %1%, X: %2%, Width: %3%, Y: %4%, Height: %5%."s};
-                cout << bounding_rect_format % qtext.toStdString() % rect.x() % rect.width() % rect.y() % rect.height() << '\n';
+                cout << format(
+                    "For string {}, bounding box: X: {}, Width: {}, Y: {}, Height: {}.\n",
+                    qtext.toStdString(),
+                    rect.x(),
+                    rect.width(),
+                    rect.y(),
+                    rect.height()
+                );
 #endif
                 return rect;
             }
