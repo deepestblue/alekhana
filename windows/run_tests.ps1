@@ -46,6 +46,10 @@ Param(
         return
     }
 
+    echo "Actual: ", $actual
+    echo "Expected: ", $expected
+    echo "Diff: ", $diff
+
     MkDirIfNotExists (Split-Path -Path $diffPath)
     $diff.ToFile($diffPath, $([ImageFormat]::Png));
 }
@@ -69,10 +73,6 @@ Get-ChildItem -Path "$tmpDir/actual" -Recurse -File | ForEach-Object {
         # Equal
         return
     }
-
-    echo "Actual: ", $actual
-    echo "Expected: ", $expected
-    echo "Diff: ", $diff
 
     Compare-Images $expected $actual $diff
 }
