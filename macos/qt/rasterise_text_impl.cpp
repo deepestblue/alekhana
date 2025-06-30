@@ -155,7 +155,7 @@ private:
         return paint_on(
             dummy,
             [&]() {
-                const auto rect = metrics.tightBoundingRect(qtext);
+                const auto rect = metrics.boundingRect(qtext);
 #ifdef DEBUG
                 cout << format(
                     "For string {}, bounding box: X: {}, Width: {}, Y: {}, Height: {}.\n",
@@ -178,7 +178,7 @@ private:
     ) {
         auto image = QImage{
             static_cast<int>(ceil(bounding_rect.width())),
-            static_cast<int>(ceil(bounding_rect.height() + 35)), // We seem to need a bit more height on Qt. Probably a typeface bug?
+            static_cast<int>(ceil(bounding_rect.height())),
             QImage::Format_RGB32
         };
         image.fill(
@@ -189,7 +189,7 @@ private:
             [&]() {
                 painter.drawText(
                     - static_cast<int>(ceil(bounding_rect.x())),
-                    - static_cast<int>(ceil(bounding_rect.y())) + 5, // What's going on here?
+                    - static_cast<int>(ceil(bounding_rect.y())),
                     qtext
                 );
             }
