@@ -113,6 +113,9 @@ public:
         );
 
         auto path = QPainterPath{};
+        path.setFillRule(
+            Qt::WindingFill
+        );
         path.addText(
             0,
             0,
