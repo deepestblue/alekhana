@@ -11,6 +11,8 @@ using namespace std;
 #include <QtGui/QImage>
 #include <QtGui/QPainter>
 #include <QtGui/QFontDatabase>
+#include <QtGui/QTextLayout>
+#include <QtGui/QPainterPath>
 
 #include "../../rasterise_text.hpp"
 
@@ -25,21 +27,6 @@ throw_if_failed(
         exp,
         l
     );
-}
-
-//
-// Unfortunately, void is irregular in C++,
-// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0146r1.html
-// so we’re forced to use some hackery to regularise it.
-// https://stackoverflow.com/questions/47996550/handling-void-assignment-in-c-generic-programming
-//
-struct Or_void {};
-template<typename T>
-auto &&operator ,(
-    T &&x,
-    Or_void
-) {
-    return forward<T>(x);
 }
 
 struct App_font {
@@ -97,11 +84,6 @@ public:
     ),
     metrics(
         qfont
-    ),
-    dummy(
-        1, // Has to be non-zero sized for QPainter::begin(…) to succeed
-        1,
-        QImage::Format_RGB32
     ) {
 #ifdef DEBUG
         const auto typeface_name = app_font.get_typeface_name().toStdString();
@@ -130,12 +112,59 @@ public:
             text
         );
 
-        const auto bounding_rect = get_bounding_rect(
+        auto path = QPainterPath{};
+        path.addText(
+            0,
+            0,
+            qfont,
             qtext
         );
-        const auto image = render_text(
-            qtext,
-            bounding_rect
+
+        const auto bounding_rect = path.boundingRect();
+
+#ifdef DEBUG
+        cout << format(
+            "For string {}, bounding box: X: {}, Width: {}, Y: {}, Height: {}.\n",
+            qtext.toStdString(),
+            bounding_rect.x(),
+            bounding_rect.width(),
+            bounding_rect.y(),
+            bounding_rect.height()
+        );
+#endif
+
+        auto image = QImage{
+            static_cast<int>(ceil(bounding_rect.width())),
+            static_cast<int>(ceil(bounding_rect.height())),
+            QImage::Format_RGB32
+        };
+        image.fill(
+            Qt::white
+        );
+        throw_if_failed(
+            painter.begin(
+                &image
+            )
+        );
+
+        painter.setFont(
+            qfont
+        );
+
+        // Position the path to align with the bounding rect
+        // The bounding rect's top-left should align with the image's top-left
+        painter.translate(
+            - static_cast<int>(ceil(bounding_rect.x())),
+            - static_cast<int>(ceil(bounding_rect.y()))
+        );
+
+        painter.fillPath(
+            path,
+            Qt::black
+        );
+
+        throw_if_failed(
+            painter.end()
         );
 
         throw_if_failed(
@@ -148,81 +177,6 @@ public:
     }
 
 private:
-    QRectF
-    get_bounding_rect(
-        const QString &qtext
-    ) {
-        return paint_on(
-            dummy,
-            [&]() {
-                const auto rect = metrics.boundingRect(qtext);
-#ifdef DEBUG
-                cout << format(
-                    "For string {}, bounding box: X: {}, Width: {}, Y: {}, Height: {}.\n",
-                    qtext.toStdString(),
-                    rect.x(),
-                    rect.width(),
-                    rect.y(),
-                    rect.height()
-                );
-#endif
-                return rect;
-            }
-        );
-    }
-
-    QImage
-    render_text(
-        const QString &qtext,
-        const QRectF &bounding_rect
-    ) {
-        auto image = QImage{
-            static_cast<int>(ceil(bounding_rect.width())),
-            static_cast<int>(ceil(bounding_rect.height())),
-            QImage::Format_RGB32
-        };
-        image.fill(
-            Qt::white
-        );
-        paint_on(
-            image,
-            [&]() {
-                painter.drawText(
-                    - static_cast<int>(ceil(bounding_rect.x())),
-                    - static_cast<int>(ceil(bounding_rect.y())),
-                    qtext
-                );
-            }
-        );
-        return image;
-    }
-
-    template <typename F>
-    auto
-    paint_on(
-        QImage &image,
-        F fn
-    ) -> decltype(fn()) {
-        throw_if_failed(
-            painter.begin(
-                &image
-            )
-        );
-        painter.setFont(
-            qfont
-        );
-        const auto result = (
-            fn(),
-            Or_void{}
-        );
-        throw_if_failed(
-            painter.end()
-        );
-        return static_cast<decltype(fn())>(
-            result
-        );
-    }
-
     QApplication app;
 
     App_font app_font;
@@ -230,7 +184,6 @@ private:
     QFontMetrics metrics;
 
     QPainter painter;
-    QImage dummy;
 };
 
 Renderer::Renderer(
