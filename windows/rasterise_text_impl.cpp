@@ -8,8 +8,6 @@
 #include <limits>
 #include <filesystem>
 
-//#define DEBUG
-
 #ifdef DEBUG
 #include <iostream>
 #include <format>
@@ -362,36 +360,26 @@ public:
             )
         );
 
-        auto metrics = DWRITE_TEXT_METRICS{};
-        throw_if_failed(
-            dwrite_text_layout->GetMetrics(
-                &metrics
-            )
-        );
-
-        auto overhang_metrics = DWRITE_OVERHANG_METRICS{};
-        throw_if_failed(
-            dwrite_text_layout->GetOverhangMetrics(
-                &overhang_metrics
-            )
+        const auto bounding_box = get_bounding_box(
+            dwrite_text_layout
         );
 
 #ifdef DEBUG
         cout << format(
-            "Metrics for {} are as follows:\nWidth: {}\nHeight: {}\nOverhang left: {}\nOverhang top: {}\n",
+            "Bounding box for {} is as follows:\nLeft: {}\nTop: {}\nRight: {}\nBottom: {}\n",
             text,
-            metrics.width,
-            metrics.height,
-            overhang_metrics.left,
-            overhang_metrics.top
+            bounding_box.left,
+            bounding_box.top,
+            bounding_box.right,
+            bounding_box.right
         );
 #endif
 
         auto wic_bitmap = ComPtr<IWICBitmap>{};
         throw_if_failed(
             wic_factory->CreateBitmap(
-                static_cast<unsigned int>(metrics.width - overhang_metrics.left),
-                static_cast<unsigned int>(metrics.height - overhang_metrics.top),
+                static_cast<unsigned int>(bounding_box.right - bounding_box.left),
+                static_cast<unsigned int>(bounding_box.bottom - bounding_box.top),
                 GUID_WICPixelFormat32bppBGR,
                 WICBitmapCacheOnDemand,
                 &wic_bitmap
@@ -417,8 +405,8 @@ public:
         );
         render_target->DrawTextLayout(
             D2D1_POINT_2F{
-                overhang_metrics.left,
-                overhang_metrics.top
+                bounding_box.left,
+                bounding_box.top
             },
             dwrite_text_layout.Get(),
             black_brush.Get(),
@@ -448,6 +436,34 @@ public:
     }
 
 private:
+    auto
+    get_bounding_box(
+        const auto &dwrite_text_layout
+    ) const {
+        auto metrics = DWRITE_TEXT_METRICS{};
+        throw_if_failed(
+            dwrite_text_layout->GetMetrics(
+                &metrics
+            )
+        );
+
+        auto overhang_metrics = DWRITE_OVERHANG_METRICS{};
+        throw_if_failed(
+            dwrite_text_layout->GetOverhangMetrics(
+                &overhang_metrics
+            )
+        );
+
+        const auto bounding_box = RectF(
+            overhang_metrics.left,
+            overhang_metrics.top,
+            metrics.width,
+            metrics.height
+        );
+
+        return bounding_box;
+    }
+
     COM_initer com_initer;
 
     ComPtr<IWICImagingFactory2> wic_factory;
