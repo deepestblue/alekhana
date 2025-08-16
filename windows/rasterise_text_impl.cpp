@@ -210,29 +210,6 @@ create_font_collection(
 }
 
 auto
-create_dwrite_text_layout(
-    const ComPtr<IDWriteFactory5> &dwrite_factory,
-    const ComPtr<IDWriteTextFormat> &text_format,
-    const string &text
-) {
-    const auto utf16_text = utf8_to_utf16(text);
-
-    auto dwrite_text_layout = ComPtr<IDWriteTextLayout>{};
-    throw_if_failed(
-        dwrite_factory->CreateTextLayout(
-            utf16_text.data(),
-            static_cast<uint32_t>(utf16_text.length()),
-            text_format.Get(),
-            numeric_limits<float>::max(),
-            numeric_limits<float>::max(),
-            &dwrite_text_layout
-        )
-    );
-
-    return dwrite_text_layout;
-}
-
-auto
 create_render_target(
     const ComPtr<ID2D1Factory1> &d2d_factory,
     const ComPtr<IWICBitmap> &wic_bitmap
@@ -339,33 +316,31 @@ public:
             )
         );
 
-        {
-            throw_if_failed(
-                DWriteCreateFactory(
-                    DWRITE_FACTORY_TYPE_SHARED,
-                    __uuidof(dwrite_factory),
-                    &dwrite_factory
-                )
-            );
+        throw_if_failed(
+            DWriteCreateFactory(
+                DWRITE_FACTORY_TYPE_SHARED,
+                __uuidof(dwrite_factory),
+                &dwrite_factory
+            )
+        );
 
-            const auto [font_collection, typeface_name] = create_font_collection(
-                dwrite_factory,
-                typeface_file_path
-            );
+        const auto [font_collection, typeface_name] = create_font_collection(
+            dwrite_factory,
+            typeface_file_path
+        );
 
-            throw_if_failed(
-                dwrite_factory->CreateTextFormat(
-                    typeface_name.c_str(),
-                    font_collection.Get(),
-                    DWRITE_FONT_WEIGHT_NORMAL,
-                    DWRITE_FONT_STYLE_NORMAL,
-                    DWRITE_FONT_STRETCH_NORMAL,
-                    typeface_size_pt,
-                    L"",
-                    &text_format
-                )
-            );
-        }
+        throw_if_failed(
+            dwrite_factory->CreateTextFormat(
+                typeface_name.c_str(),
+                font_collection.Get(),
+                DWRITE_FONT_WEIGHT_NORMAL,
+                DWRITE_FONT_STYLE_NORMAL,
+                DWRITE_FONT_STRETCH_NORMAL,
+                typeface_size_pt,
+                L"",
+                &text_format
+            )
+        );
     }
 
     auto
@@ -373,10 +348,18 @@ public:
         const string &text,
         const string &output_filename
     ) const {
-        const auto dwrite_text_layout = create_dwrite_text_layout(
-            dwrite_factory,
-            text_format,
-            text
+        auto dwrite_text_layout = ComPtr<IDWriteTextLayout>{};
+        const auto utf16_text = utf8_to_utf16(text);
+
+        throw_if_failed(
+            dwrite_factory->CreateTextLayout(
+                utf16_text.data(),
+                static_cast<uint32_t>(utf16_text.length()),
+                text_format.Get(),
+                numeric_limits<float>::max(),
+                numeric_limits<float>::max(),
+                &dwrite_text_layout
+            )
         );
 
         auto metrics = DWRITE_TEXT_METRICS{};
