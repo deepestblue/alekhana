@@ -171,9 +171,7 @@ private:
 
 public:
     impl(
-        const path &typeface_file_path,
-        int ,
-        char *[]
+        const path &typeface_file_path
     ) : font(
         create_font_from_file(typeface_file_path)
     ) {}
@@ -294,13 +292,11 @@ public:
 
 Renderer::Renderer(
     const path &typeface_file_path,
-    int argc,
-    char *argv[]
+    int ,
+    char *[]
 ) : p_impl{
     std::make_unique<impl>(
-        typeface_file_path,
-        argc,
-        argv
+        typeface_file_path
     )
 } {}
 
