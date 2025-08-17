@@ -7,6 +7,9 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <filesystem>
+#include <iomanip>
+#include <algorithm>
 
 #ifdef _WIN32
 #pragma warning(default: 5045)
@@ -38,6 +41,13 @@ main(
     };
 
     auto input_stream = ifstream{input_file};
+    throw_if_failed(
+        input_stream.is_open(),
+        [&] {
+            return "Failed to open input file: "s + input_file;
+        }
+    );
+
     auto line = string{};
     auto i = size_t{};
     while (

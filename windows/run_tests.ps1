@@ -56,7 +56,11 @@ Param(
 
 $tmpDir = New-TemporaryDirectory
 
-robocopy $masterImages "$tmpDir/expected" /MIR /Z /UNICODE /NFL /NDL /NP /NJH /NJS /NS /NC
+# robocopy returns 0-7 for success, 8+ for failure
+$robocopyResult = robocopy $masterImages "$tmpDir/expected" /MIR /Z /UNICODE /NFL /NDL /NP /NJH /NJS /NS /NC
+if ($robocopyResult -ge 8) {
+    throw "Failed to copy master images. Robocopy exit code: $robocopyResult"
+}
 
 MkDirIfNotExists "$tmpDir/actual"
 & "$PSScriptRoot/generate_images.ps1" -Rasteriser $rasteriser -OutputRoot "$tmpDir/actual" -TypeFace $typefacePath -TestCases $testCases

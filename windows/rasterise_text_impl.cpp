@@ -37,21 +37,37 @@ auto
 throw_if_failed(int win32_return_code) {
     const auto win32_error_msg = [] {
         const auto last_error = GetLastError();
-        const auto buffer = unique_ptr<char, decltype(&LocalFree)>(
-            nullptr,
-            LocalFree
-        );
+        auto buffer = LPSTR{nullptr};
         const auto len = FormatMessageA(
             FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
             nullptr,
             last_error,
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            buffer.get(),
+            reinterpret_cast<LPSTR>(&buffer),
             0,
             nullptr
         );
 
-        return string{buffer.get(), len};
+        throw_if_failed(
+            static_cast<bool>(buffer),
+            [] {
+                return "FormatMessageA error";
+            }
+        );
+
+        auto guard = unique_ptr<char, decltype(&LocalFree)>(
+            buffer,
+            LocalFree
+        );
+
+        throw_if_failed(
+            len > 0,
+            [] {
+                return "FormatMessageA error";
+            }
+        );
+
+        return string{guard.get(), len};
     };
 
     throw_if_failed(
@@ -246,7 +262,7 @@ encode_wicbitmap_onto_wicstream(
     IWICStream *stream,
     const ComPtr<IWICBitmap> &wic_bitmap
 ) {
-    auto wic_bitmap_encoder = static_cast<IWICBitmapEncoder *>(nullptr);
+    auto wic_bitmap_encoder = ComPtr<IWICBitmapEncoder>{};
     throw_if_failed(
         wic_factory->CreateEncoder(
             GUID_ContainerFormatPng,
@@ -263,7 +279,7 @@ encode_wicbitmap_onto_wicstream(
     );
 
     {
-        auto wic_frame_encode = static_cast<IWICBitmapFrameEncode *>(nullptr);
+        auto wic_frame_encode = ComPtr<IWICBitmapFrameEncode>{};
         throw_if_failed(
             wic_bitmap_encoder->CreateNewFrame(
                 &wic_frame_encode,
@@ -371,7 +387,7 @@ public:
             bounding_box.left,
             bounding_box.top,
             bounding_box.right,
-            bounding_box.right
+            bounding_box.bottom
         );
 #endif
 
@@ -417,7 +433,7 @@ public:
             render_target->EndDraw()
         );
 
-        auto stream = static_cast<IWICStream *>(nullptr);
+        auto stream = ComPtr<IWICStream>{};
         throw_if_failed(
             wic_factory->CreateStream(&stream)
         );
@@ -430,7 +446,7 @@ public:
 
         encode_wicbitmap_onto_wicstream(
             wic_factory,
-            stream,
+            stream.Get(),
             wic_bitmap
         );
     }
