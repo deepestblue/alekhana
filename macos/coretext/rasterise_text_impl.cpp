@@ -192,7 +192,7 @@ public:
 
 #ifdef DEBUG
         cout << format(
-            "For string {}, bounding box: X: {}, Width: {}, Y: {}, Height: {}.\n",
+            "For string {}, bounding box: X: {}, Width: {}, Y: {}, Height: {}.\n"s,
             text,
             bounding_box.origin.x,
             bounding_box.size.width,

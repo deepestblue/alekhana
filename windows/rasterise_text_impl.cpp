@@ -37,37 +37,33 @@ auto
 throw_if_failed(int win32_return_code) {
     const auto win32_error_msg = [] {
         const auto last_error = GetLastError();
-        auto buffer = LPSTR{nullptr};
+        auto raw_buffer = nullptr;
         const auto len = FormatMessageA(
             FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
             nullptr,
             last_error,
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            reinterpret_cast<LPSTR>(&buffer),
+            reinterpret_cast<LPSTR>(&raw_buffer),
             0,
             nullptr
         );
 
         throw_if_failed(
-            static_cast<bool>(buffer),
-            [] {
-                return "FormatMessageA error";
-            }
+            static_cast<bool>(raw_buffer),
+            [] { return "FormatMessageA error"s; }
         );
 
-        auto guard = unique_ptr<char, decltype(&LocalFree)>(
-            buffer,
+        auto buffer = unique_ptr<char, decltype(&LocalFree)>(
+            raw_buffer,
             LocalFree
         );
 
         throw_if_failed(
             len > 0,
-            [] {
-                return "FormatMessageA error";
-            }
+            [] { return "FormatMessageA error"s; }
         );
 
-        return string{guard.get(), len};
+        return string{buffer.get(), len};
     };
 
     throw_if_failed(
@@ -382,7 +378,7 @@ public:
 
 #ifdef DEBUG
         cout << format(
-            "Bounding box for {} is as follows:\nLeft: {}\nTop: {}\nRight: {}\nBottom: {}\n",
+            "Bounding box for {} is as follows:\nLeft: {}\nTop: {}\nRight: {}\nBottom: {}\n"s,
             text,
             bounding_box.left,
             bounding_box.top,

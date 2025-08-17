@@ -88,7 +88,7 @@ public:
 #ifdef DEBUG
         const auto typeface_name = app_font.get_typeface_name().toStdString();
         cout << format(
-            "Typeface: {}, ascent: {}, descent: {}, leading: {}.\n",
+            "Typeface: {}, ascent: {}, descent: {}, leading: {}.\n"s,
             typeface_name,
             metrics.ascent(),
             metrics.descent(),
@@ -127,7 +127,7 @@ public:
 
 #ifdef DEBUG
         cout << format(
-            "For string {}, bounding box: X: {}, Width: {}, Y: {}, Height: {}.\n",
+            "For string {}, bounding box: X: {}, Width: {}, Y: {}, Height: {}.\n"s,
             qtext.toStdString(),
             bounding_rect.x(),
             bounding_rect.width(),
