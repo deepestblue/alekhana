@@ -285,6 +285,12 @@ encode_wicbitmap_onto_wicstream(
         throw_if_failed(
             wic_frame_encode->Initialize(nullptr)
         );
+
+        auto format = WICPixelFormatGUID{GUID_WICPixelFormat32bppBGR};
+        throw_if_failed(
+            wic_frame_encode->SetPixelFormat(&format)
+        );
+
         throw_if_failed(
             wic_frame_encode->WriteSource(
                 wic_bitmap.Get(),
