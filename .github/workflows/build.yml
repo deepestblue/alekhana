@@ -85,13 +85,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if gh release view latest >/dev/null 2>&1; then
-            gh release upload latest alekhana_dist.zip --clobber
-            gh release edit latest \
+          if gh release view latest -R "${GITHUB_REPOSITORY}" >/dev/null; then
+            gh release upload latest alekhana_dist.zip --clobber -R "${GITHUB_REPOSITORY}"
+            gh release edit latest -R "${GITHUB_REPOSITORY}" \
               --prerelease \
               --title "Development Build"
           else
-            gh release create latest alekhana_dist.zip \
+            gh release create latest alekhana_dist.zip -R "${GITHUB_REPOSITORY}" \
               --prerelease \
               --title "Development Build" \
               --notes "Automated development build."
