@@ -7,13 +7,24 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_macos:
     name: Build MacOS
     runs-on: macos-15
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
       - name: Install dependencies
         run: brew install qt@6 boost
         env:
@@ -22,7 +33,7 @@ jobs:
         run: make dist
         working-directory: macos
       - name: Upload MacOS artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: MacOS distrib
           path: dist/*
@@ -30,16 +41,20 @@ jobs:
   build_windows:
     name: Build Windows
     runs-on: windows-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
       - name: Native Tools Command Prompt
-        uses: ilammy/msvc-dev-cmd@v1
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
       - name: Build and package
         run: nmake dist
         working-directory: windows
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: Windows distrib
           path: dist/*
@@ -48,14 +63,16 @@ jobs:
     needs: [build_macos, build_windows]
     name: Package up artifacts
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to create/update the "latest" release and upload assets.
     steps:
       - name: Download MacOS artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: MacOS distrib
           path: alekhana_dist
       - name: Download Windows artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: Windows distrib
           path: alekhana_dist
@@ -65,10 +82,19 @@ jobs:
       - name: Zip up artifacts
         run: zip -r alekhana_dist.zip alekhana_dist
       - name: Push latest release to Github
-        uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          prerelease: true
-          title: "Development Build"
-          files: alekhana_dist.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view latest >/dev/null 2>&1; then
+            gh release upload latest alekhana_dist.zip --clobber
+            gh release edit latest \
+              --target "${GITHUB_SHA}" \
+              --prerelease \
+              --title "Development Build"
+          else
+            gh release create latest alekhana_dist.zip \
+              --target "${GITHUB_SHA}" \
+              --prerelease \
+              --title "Development Build" \
+              --notes "Automated development build."
+          fi
