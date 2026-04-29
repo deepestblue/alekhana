@@ -88,12 +88,10 @@ jobs:
           if gh release view latest >/dev/null 2>&1; then
             gh release upload latest alekhana_dist.zip --clobber
             gh release edit latest \
-              --target "${GITHUB_SHA}" \
               --prerelease \
               --title "Development Build"
           else
             gh release create latest alekhana_dist.zip \
-              --target "${GITHUB_SHA}" \
               --prerelease \
               --title "Development Build" \
               --notes "Automated development build."
