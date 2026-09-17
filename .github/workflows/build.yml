@@ -17,7 +17,7 @@ concurrency:
 jobs:
   build_macos:
     name: Build MacOS
-    runs-on: macos-15
+    runs-on: macos-26
     permissions:
       contents: read
     steps:
