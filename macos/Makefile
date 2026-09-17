@@ -1,6 +1,6 @@
 QTPATH := ${shell brew --prefix qt}
 BOOSTPATH := ${shell brew --prefix boost}
-CXXFLAGS := -O3 -std=c++26 -Weverything -Werror -Wfatal-errors -pedantic-errors -ftemplate-backtrace-limit=1 --system-header-prefix=boost/ -I${BOOSTPATH}/include -xobjective-c++ -Wno-poison-system-directories -Wno-c++98-compat -Wno-padded -Wno-unqualified-std-cast-call
+CXXFLAGS := -O3 -std=c++26 -Weverything -Werror -Wfatal-errors -pedantic-errors -ftemplate-backtrace-limit=1 --system-header-prefix=boost/ -I${BOOSTPATH}/include -xobjective-c++ -Wno-poison-system-directories -Wno-c++98-compat -Wno-padded -Wno-unqualified-std-cast-call -Wno-nrvo
 LDFLAGS := -Wfatal-errors
 QTOBJECTS := rasterise_text.o qt/rasterise_text_impl.o
 CORETEXTOBJECTS := rasterise_text.o coretext/rasterise_text_impl.o

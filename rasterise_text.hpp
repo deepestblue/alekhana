@@ -11,7 +11,7 @@
 using traced = boost::error_info<struct tag_stacktrace, boost::stacktrace::stacktrace>;
 
 template <typename E>
-void throw_with_trace(
+[[noreturn]] void throw_with_trace(
     const E &e
 ) {
     throw boost::enable_error_info(e)

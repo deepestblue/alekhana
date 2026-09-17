@@ -225,8 +225,8 @@ public:
             CGRectMake(
                 0u,
                 0u,
-                static_cast<size_t>(ceil(bounding_box.size.width)),
-                static_cast<size_t>(ceil(bounding_box.size.height))
+                ceil(bounding_box.size.width),
+                ceil(bounding_box.size.height)
             )
         );
         CGContextSetShouldAntialias(
