@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <limits>
 #include <filesystem>
+#include <algorithm>
 
 #ifdef DEBUG
 #include <iostream>
@@ -31,7 +32,6 @@ using Microsoft::WRL::ComPtr;
 using D2D1::ColorF;
 using D2D1::RectF;
 using D2D1::PixelFormat;
-using D2D1::Matrix3x2F;
 
 auto
 throw_if_failed(int win32_return_code) {
@@ -307,6 +307,182 @@ encode_wicbitmap_onto_wicstream(
     );
 }
 
+// Sadly, Win32 doesn't seem to offer glyph‐path‐bounds directly, unlike CoreText (CTLineGetBoundsWithOptions(kCTLineBoundsUseGlyphPathBounds)) or Qt (QPainterPath::boundingRect()), so we have to implement our own IDWriteTextRenderer to calculate glyph‐path‐bounds. The reason we need glyph‐path‐bounds is of course that the naive bounding boxvcalculation that DWrite provides relies on DWRITE_TEXT_METRICS/DWRITE_OVERHANG_METRICS. These are sized off the font's design line metrics (ascent/descent/line gap) and not off which pixels actually get inked, and so are wildly wrong often. As above, this implementation unions the exact vector outlines of every glyph run.
+
+class Bounds_renderer : public IDWriteTextRenderer {
+public:
+    explicit
+    Bounds_renderer(
+        ID2D1Factory1 *d2d_factory
+    ) : d2d_factory(d2d_factory) {}
+
+    virtual ~Bounds_renderer() = default;
+
+    auto
+    bounds() const {
+        return accumulated_bounds;
+    }
+
+    // Bounds_renderer is stack‐allocated and only used for the duration of a single IDWriteTextLayout::Draw call, so refcounting isn't needed.
+    IFACEMETHODIMP_(ULONG) AddRef() noexcept override {
+        return 1;
+    }
+
+    IFACEMETHODIMP_(ULONG) Release() noexcept override {
+        return 1;
+    }
+
+    IFACEMETHODIMP QueryInterface(
+        REFIID riid,
+        void **ppv_object
+    ) noexcept override {
+        if (
+            riid != __uuidof(IDWriteTextRenderer) &&
+            riid != __uuidof(IDWritePixelSnapping) &&
+            riid != __uuidof(IUnknown)
+        ) {
+            *ppv_object = nullptr;
+            return E_NOINTERFACE;
+        }
+
+        *ppv_object = this;
+        return S_OK;
+    }
+
+    IFACEMETHODIMP IsPixelSnappingDisabled(
+        void *,
+        BOOL *is_disabled
+    ) noexcept override {
+        *is_disabled = TRUE;
+        return S_OK;
+    }
+
+    IFACEMETHODIMP GetCurrentTransform(
+        void *,
+        DWRITE_MATRIX *transform
+    ) noexcept override {
+        *transform = DWRITE_MATRIX{1, 0, 0, 1, 0, 0};
+        return S_OK;
+    }
+
+    IFACEMETHODIMP GetPixelsPerDip(
+        void *,
+        FLOAT *pixels_per_dip
+    ) noexcept override {
+        *pixels_per_dip = 1.0f;
+        return S_OK;
+    }
+
+    // IDWriteTextRenderer
+    IFACEMETHODIMP DrawGlyphRun(
+        void *,
+        FLOAT baseline_origin_x,
+        FLOAT baseline_origin_y,
+        DWRITE_MEASURING_MODE,
+        const DWRITE_GLYPH_RUN *glyph_run,
+        const DWRITE_GLYPH_RUN_DESCRIPTION *,
+        IUnknown *
+    ) noexcept override try {
+        auto path_geometry = ComPtr<ID2D1PathGeometry>{};
+        throw_if_failed(
+            d2d_factory->CreatePathGeometry(&path_geometry)
+        );
+
+        auto sink = ComPtr<ID2D1GeometrySink>{};
+        throw_if_failed(
+            path_geometry->Open(&sink)
+        );
+
+        throw_if_failed(
+            glyph_run->fontFace->GetGlyphRunOutline(
+                glyph_run->fontEmSize,
+                glyph_run->glyphIndices,
+                glyph_run->glyphAdvances,
+                glyph_run->glyphOffsets,
+                glyph_run->glyphCount,
+                glyph_run->isSideways,
+                static_cast<BOOL>(glyph_run->bidiLevel % 2),
+                sink.Get()
+            )
+        );
+
+        throw_if_failed(
+            sink->Close()
+        );
+
+        auto run_bounds = D2D1_RECT_F{};
+        throw_if_failed(
+            path_geometry->GetBounds(
+                nullptr,
+                &run_bounds
+            )
+        );
+
+        // In a different universe, this next check would not be necessary, because any sentinel value we get would be D2D's documented (FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX), which would work cleanly with the min/max calculations. However, we've observed cases where an empty glyph (Sampradaya's U+200C, confirmed with fontTools to have 0 contours and no point data at all) had GetGlyphRunOutline/GetBounds produce instead (inf, inf, FLT_MAX, FLT_MAX), which is not that sentinel and is not safe to blindly union with min/max. So we have to add this explicit check. Boo.
+        if (run_bounds.left <= run_bounds.right && run_bounds.top <= run_bounds.bottom) {
+            run_bounds.left += baseline_origin_x;
+            run_bounds.right += baseline_origin_x;
+            run_bounds.top += baseline_origin_y;
+            run_bounds.bottom += baseline_origin_y;
+
+            accumulated_bounds.left = min(accumulated_bounds.left, run_bounds.left);
+            accumulated_bounds.top = min(accumulated_bounds.top, run_bounds.top);
+            accumulated_bounds.right = max(accumulated_bounds.right, run_bounds.right);
+            accumulated_bounds.bottom = max(accumulated_bounds.bottom, run_bounds.bottom);
+        }
+
+        return S_OK;
+    }
+    catch ([[maybe_unused]] const exception &e) {
+#ifdef DEBUG
+        cerr << format(
+            "DrawGlyphRun failed: {}\n",
+            e.what()
+        );
+#endif
+        return E_FAIL;
+    }
+
+    IFACEMETHODIMP DrawUnderline(
+        void *,
+        FLOAT,
+        FLOAT,
+        const DWRITE_UNDERLINE *,
+        IUnknown *
+    ) noexcept override {
+        return S_OK;
+    }
+    IFACEMETHODIMP DrawStrikethrough(
+        void *,
+        FLOAT,
+        FLOAT,
+        const DWRITE_STRIKETHROUGH *,
+        IUnknown *
+    ) noexcept override {
+        return S_OK;
+    }
+    IFACEMETHODIMP DrawInlineObject(
+        void *,
+        FLOAT,
+        FLOAT,
+        IDWriteInlineObject *,
+        BOOL,
+        BOOL,
+        IUnknown *
+    ) noexcept override {
+        return E_NOTIMPL;
+    }
+
+private:
+    ID2D1Factory1 *d2d_factory;
+    D2D1_RECT_F accumulated_bounds{
+        numeric_limits<FLOAT>::max(),
+        numeric_limits<FLOAT>::max(),
+        numeric_limits<FLOAT>::lowest(),
+        numeric_limits<FLOAT>::lowest()
+    };
+};
+
 class Renderer::impl {
 public:
     impl(
@@ -378,37 +554,35 @@ public:
             )
         );
 
-        auto text_metrics = DWRITE_TEXT_METRICS{};
+        auto bounds_renderer = Bounds_renderer{d2d_factory.Get()};
         throw_if_failed(
-            dwrite_text_layout->GetMetrics(
-                &text_metrics
+            dwrite_text_layout->Draw(
+                nullptr,
+                &bounds_renderer,
+                0,
+                0
             )
         );
 
-        auto overhang_metrics = DWRITE_OVERHANG_METRICS{};
+        const auto bounds = bounds_renderer.bounds();
         throw_if_failed(
-            dwrite_text_layout->GetOverhangMetrics(
-                &overhang_metrics
-            )
+            bounds.left < bounds.right && bounds.top < bounds.bottom,
+            [] { return "Text produced no visible glyphs."s; }
         );
 
 #ifdef DEBUG
         cout << format(
-            "Metrics for {} are as follows:\nText Metrics Left: {}\nText Metrics Top: {}\nText Metrics Width: {}\nText Metrics Height: {}\nOverhang Metrics Left: {}\nOverhang Metrics Top: {}\nOverhang Metrics Right: {}\nOverhang Metrics Bottom: {}\n",
+            "For string {}, bounding box: X: {}, Width: {}, Y: {}, Height: {}.\n",
             text,
-            text_metrics.left,
-            text_metrics.top,
-            text_metrics.width,
-            text_metrics.height,
-            overhang_metrics.left,
-            overhang_metrics.top,
-            overhang_metrics.right,
-            overhang_metrics.bottom
+            bounds.left,
+            bounds.right - bounds.left,
+            bounds.top,
+            bounds.bottom - bounds.top
         );
 #endif
 
-        const auto width = static_cast<unsigned int>(ceil(text_metrics.width));
-        const auto height = static_cast<unsigned int>(ceil(text_metrics.height));
+        const auto width = static_cast<unsigned int>(ceil(bounds.right - bounds.left));
+        const auto height = static_cast<unsigned int>(ceil(bounds.bottom - bounds.top));
 
         auto wic_bitmap = ComPtr<IWICBitmap>{};
         throw_if_failed(
@@ -440,8 +614,8 @@ public:
         );
         render_target->DrawTextLayout(
             D2D1_POINT_2F{
-                overhang_metrics.left - text_metrics.left,
-                overhang_metrics.top  - text_metrics.top
+                -bounds.left,
+                -bounds.top
             },
             dwrite_text_layout.Get(),
             black_brush.Get(),
