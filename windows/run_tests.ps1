@@ -40,18 +40,24 @@ Param(
     $expected = [Snapshot]::FromFile($expectedPath);
     $actual = [Snapshot]::FromFile($actualPath);
 
+    if ($expected.Width -ne $actual.Width -or $expected.Height -ne $actual.Height) {
+        Write-Output "Size mismatch: expected=$expectedPath ($($expected.Width)x$($expected.Height)) actual=$actualPath ($($actual.Width)x$($actual.Height))"
+
+        MkDirIfNotExists (Split-Path -Path $diffPath)
+        Copy-Item -LiteralPath $actualPath -Destination $diffPath
+        return
+    }
+
     $diff = $actual.CompareTo($expected);
 
     if ($snapshotVerifier.Verify($diff) -eq $([VerificationResult]::Pass)) {
         return
     }
 
-    echo "Actual: ", $actual
-    echo "Expected: ", $expected
-    echo "Diff: ", $diff
+    Write-Output "Contents mismatch: expected=$expectedPath actual=$actualPath diff=$diffPath"
 
     MkDirIfNotExists (Split-Path -Path $diffPath)
-    $diff.ToFile($diffPath, $([ImageFormat]::Png));
+    $diff.ToFile($diffPath, $([ImageFormat]::Png)) | Out-Null
 }
 
 $tmpDir = New-TemporaryDirectory
@@ -73,7 +79,7 @@ Get-ChildItem -Path "$tmpDir/actual" -Recurse -File | ForEach-Object {
     $expected = $actual.replace($tmpPath + '\actual\', $tmpPath + '\expected\')
     $diff = $actual.replace($tmpPath + '\actual\', $tmpPath + '\diff\')
 
-    if (! (Compare-Object $(Get-Content $expected) $(Get-Content $actual))) {
+    if ((Get-FileHash -LiteralPath $expected -Algorithm SHA256).Hash -eq (Get-FileHash -LiteralPath $actual -Algorithm SHA256).Hash) {
         # Equal
         return
     }
@@ -82,7 +88,7 @@ Get-ChildItem -Path "$tmpDir/actual" -Recurse -File | ForEach-Object {
 }
 
 $count = 0
-Get-ChildItem "$tmpDir/diff" -Recurse | ForEach-Object {
+Get-ChildItem "$tmpDir/diff" -Recurse -File | ForEach-Object {
     ++$count
     Write-Output $_.FullName
 }

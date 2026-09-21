@@ -43,7 +43,7 @@ As an example,
 
 ### On Windows
 
-1. `Alekhana` requires Visual Studio Build tools (not the entire IDE, just the command line tools.
+1. `Alekhana` requires Visual Studio Build tools (not the entire IDE, just the command line tools).
 1. Launch the x64 Native tools command shell.
 1. If you prefer to grab pre‐built binaries, grab the [latest binaries](https://github.com/deepestblue/alekhana/releases/download/latest/alekhana_dist.zip), unzip them and change into the unzipped directory. Skip to Step 9.
 1. Grab the [latest zip sources](https://github.com/deepestblue/alekhana/archive/refs/tags/latest.zip).
