@@ -236,7 +236,7 @@ public:
         CGContextSetTextPosition(
             context,
             -bounding_box.origin.x,
-            -bounding_box.origin.y
+            -bounding_box.origin.y + (ceil(bounding_box.size.height) - bounding_box.size.height) // CoreText's graphics origin is bottom‐left, and so the extra slack (ceil(height) - height) ends up at the top of the image, which compares badly against other renderers because the first visible pixels are pushed down. Compensate for that by making the extra blank be at the bottom of the image.
         );
         CTLineDraw(
             line.get(),
