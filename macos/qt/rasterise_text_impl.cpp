@@ -157,8 +157,8 @@ public:
         // Position the path to align with the bounding rect
         // The bounding rect's top‐left should align with the image's top‐left
         painter.translate(
-            - static_cast<int>(ceil(bounding_rect.x())),
-            - static_cast<int>(ceil(bounding_rect.y()))
+            - bounding_rect.x(),
+            - bounding_rect.y()
         );
 
         painter.fillPath(
