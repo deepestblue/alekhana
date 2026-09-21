@@ -250,17 +250,13 @@ public:
             CGImageRelease
         );
 
-        const auto path = ConstCFReleaser<CFStringRef>(
-            CFStringCreateWithCString(
-                nullptr,
-                output_filename.c_str(),
-                kCFStringEncodingUTF8
-            )
+        const auto output_filename_as_cfstring = CFStringFromString(
+            output_filename
         );
         const auto destURL = ConstCFReleaser<CFURLRef>(
             CFURLCreateWithFileSystemPath(
                 nullptr,
-                path.get(),
+                output_filename_as_cfstring.get(),
                 kCFURLPOSIXPathStyle,
                 0
             )
@@ -273,8 +269,13 @@ public:
                 1,
                 nullptr
             ),
-            [](const void *ref) { if (ref) CFRelease(ref); }
-        );
+            [](const void *ref) {
+                if (! ref) {
+                    return;
+                }
+                CFRelease(ref);
+            }
+    );
 
         CGImageDestinationAddImage(
             imageDestination.get(),
