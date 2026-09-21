@@ -50,10 +50,20 @@ for actual in $(find $TMPDIR/actual -type f); do
 
     mkdir -p $(dirname $diff)
 
-    # Sending stderr to /dev/null to suppress the metric output from compare
+    # ImageMagick doesn't like 0‐byte files.
+    if [ ! -s $expected ]; then
+        cp $actual $diff
+        continue
+    fi
+    if [ ! -s $actual ]; then
+        cp $expected $diff
+        continue
+    fi
+
+    # Sending stderr to /dev/null to suppress the metric output from compare.
     compare 2>/dev/null -compose src $expected $actual $diff || {
         RESULT=$?
-        # ImageMagick compare returns 0 for identical, 1 for different and 2 for error
+        # ImageMagick compare returns 0 for identical, 1 for different and 2 for error.
         [ $RESULT -gt 1 ] && exit $RESULT
     }
 done

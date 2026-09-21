@@ -201,6 +201,11 @@ public:
         );
 #endif
 
+        if (bounding_box.size.width <= 0 || bounding_box.size.height <= 0) {
+            write_empty_file(output_filename);
+            return;
+        }
+
         const auto context_guard = CFReleaser<CGContextRef>(
             CGBitmapContextCreate(
                 nullptr,

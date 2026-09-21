@@ -2,6 +2,7 @@
 #include <string>
 #include <memory>
 #include <filesystem>
+#include <fstream>
 
 #ifndef _WIN32
 #define BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED
@@ -24,6 +25,14 @@ using std::unique_ptr;
 using std::filesystem::path;
 
 const auto typeface_size_pt = 48u;
+
+// We need to write out empty files to represent a line producing no ink (blank, whitespace‐only, or a zero‐ink glyph such as a notdef fallback), as sadly a 0×0 image isn't representable as an image.
+inline void
+write_empty_file(
+    const path &output_filename
+) {
+    std::ofstream{output_filename};
+}
 
 template <typename E>
 auto

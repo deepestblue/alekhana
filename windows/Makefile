@@ -1,7 +1,7 @@
 PS = powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command
 
 CPPFLAGS =
-CFLAGS = /utf-8 /EHsc /std:c++latest /nologo /experimental:external /external:anglebrackets /external:W0 /Wall /Z7
+CFLAGS = /utf-8 /EHsc /std:c++latest /nologo /experimental:external /external:anglebrackets /external:W0 /Wall /wd4514 /Z7
 LINKLIBS = d2d1.lib dwrite.lib
 LINKFLAGS = /link /DEBUG
 OBJECTS	= rasterise_text.obj rasterise_text_impl.obj

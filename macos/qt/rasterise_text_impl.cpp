@@ -136,6 +136,11 @@ public:
         );
 #endif
 
+        if (bounding_rect.width() <= 0 || bounding_rect.height() <= 0) {
+            write_empty_file(output_filename);
+            return;
+        }
+
         auto image = QImage{
             static_cast<int>(ceil(bounding_rect.width())),
             static_cast<int>(ceil(bounding_rect.height())),

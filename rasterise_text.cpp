@@ -56,9 +56,6 @@ main(
             line
         )
     ) {
-        if (line.empty()) {
-            continue;
-        }
         auto stream = ostringstream{};
         stream << output_dir << "/"s << setfill('0')
             << setw(3) // We don't expect to have any test cases with more than a 1000 lines.

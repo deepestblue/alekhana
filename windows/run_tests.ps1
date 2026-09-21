@@ -31,20 +31,38 @@ function New-TemporaryDirectory {
     New-Item -ItemType Directory -Path (Join-Path $parent $name)
 }
 
+function Copy-ToDiff() {
+    Param(
+        [Parameter(Mandatory = $True)] [String] $SourcePath,
+        [Parameter(Mandatory = $True)] [String] $DiffPath
+    )
+    MkDirIfNotExists (Split-Path -Path $DiffPath)
+    Copy-Item -LiteralPath $SourcePath -Destination $DiffPath
+}
+
 function Compare-Images {
 Param(
     [Parameter(Mandatory=$true)][string]$expectedPath,
     [Parameter(Mandatory=$true)][string]$actualPath,
     [Parameter(Mandatory=$true)][string]$diffPath
 )
+    # Snapshot doesn't like 0‐byte files, so handling them specially.
+    if ((Get-Item -LiteralPath $expectedPath).Length -eq 0) {
+        Copy-ToDiff $actualPath $diffPath
+        return
+    }
+    if ((Get-Item -LiteralPath $actualPath).Length -eq 0) {
+        Copy-ToDiff $expectedPath $diffPath
+        return
+    }
+
     $expected = [Snapshot]::FromFile($expectedPath);
     $actual = [Snapshot]::FromFile($actualPath);
 
     if ($expected.Width -ne $actual.Width -or $expected.Height -ne $actual.Height) {
         Write-Output "Size mismatch: expected=$expectedPath ($($expected.Width)x$($expected.Height)) actual=$actualPath ($($actual.Width)x$($actual.Height))"
 
-        MkDirIfNotExists (Split-Path -Path $diffPath)
-        Copy-Item -LiteralPath $actualPath -Destination $diffPath
+        Copy-ToDiff $actualPath $diffPath
         return
     }
 
@@ -53,8 +71,6 @@ Param(
     if ($snapshotVerifier.Verify($diff) -eq $([VerificationResult]::Pass)) {
         return
     }
-
-    Write-Output "Contents mismatch: expected=$expectedPath actual=$actualPath diff=$diffPath"
 
     MkDirIfNotExists (Split-Path -Path $diffPath)
     $diff.ToFile($diffPath, $([ImageFormat]::Png)) | Out-Null

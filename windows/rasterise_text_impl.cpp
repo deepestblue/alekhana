@@ -74,6 +74,11 @@ throw_if_failed(int win32_return_code) {
 
 auto
 utf8_to_utf16(const string &in) {
+    // MultiByteToWideChar's return value of 0 for an empty string's size is indistinguishable from its error value, so an empty input has to be special‐cased.
+    if (in.empty()) {
+        return wstring{};
+    }
+
     const auto buf_size = MultiByteToWideChar(
         CP_UTF8,
         MB_ERR_INVALID_CHARS,
@@ -565,10 +570,10 @@ public:
         );
 
         const auto bounds = bounds_renderer.bounds();
-        throw_if_failed(
-            bounds.left < bounds.right && bounds.top < bounds.bottom,
-            [] { return "Text produced no visible glyphs."s; }
-        );
+        if (! (bounds.left < bounds.right && bounds.top < bounds.bottom)) {
+            write_empty_file(output_filename);
+            return;
+        }
 
 #ifdef DEBUG
         cout << format(
