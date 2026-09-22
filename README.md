@@ -75,7 +75,7 @@ This section is for maintainers cutting a new release, not for consumers of alek
 1. Bump the [`VERSION`](VERSION) file to the new version, using your judgment on major/minor/patch.
 1. `git add VERSION && git commit -m "Bump version to <new version>"`
 1. `git push origin main`
-1. `git tag -a v<new version> -m "v<new version>"`
+1. `git tag -a v<new version> -F <path to a file with your release notes>` (or `-m "<short notes>"` for something brief) — this message becomes the actual GitHub Release notes, so write it as such.
 1. `git push origin v<new version>`
 
-Pushing the tag triggers the [release workflow](.github/workflows/release.yml), which builds both platforms, checks that `VERSION` on the tagged commit matches the tag, packages a per‐platform archive, and publishes a GitHub Release with those archives attached.
+Pushing the tag triggers the [release workflow](.github/workflows/release.yml), which builds both platforms, checks that `VERSION` on the tagged commit matches the tag, packages a per‐platform archive, pulls the tag's own message to use as the release notes, and publishes a GitHub Release with those archives and notes attached — no further steps needed.
