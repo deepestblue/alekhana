@@ -46,6 +46,17 @@ function Copy-ToDiff() {
     Copy-Item -LiteralPath $SourcePath -Destination $DiffPath
 }
 
+function Get-FileSha256() {
+    # Avoid Get-FileHash: it lives in Microsoft.PowerShell.Utility, which can
+    # fail to auto‐load when powershell.exe is spawned from a pwsh parent
+    # that hands down its own (incompatible) $env:PSModulePath.
+    Param([Parameter(Mandatory = $True)] [String] $Path)
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    $hash = [System.BitConverter]::ToString($sha256.ComputeHash([System.IO.File]::ReadAllBytes($Path)))
+    $sha256.Dispose()
+    return $hash
+}
+
 function Compare-Images {
 Param(
     [Parameter(Mandatory=$true)][string]$expectedPath,
@@ -101,7 +112,7 @@ Get-ChildItem -Path "$tmpDir/actual" -Recurse -File | ForEach-Object {
     $expected = $actual.replace($tmpPath + '\actual\', $tmpPath + '\expected\')
     $diff = $actual.replace($tmpPath + '\actual\', $tmpPath + '\diff\')
 
-    if ((Get-FileHash -LiteralPath $expected -Algorithm SHA256).Hash -eq (Get-FileHash -LiteralPath $actual -Algorithm SHA256).Hash) {
+    if ((Get-FileSha256 $expected) -eq (Get-FileSha256 $actual)) {
         # Equal
         return
     }
