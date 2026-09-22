@@ -67,3 +67,15 @@ As an example,
 
     ```powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ./run_tests.ps1 -MasterImages ../masters/windows -TestCases ../cases -TypeFace ../src/acme.ttf -Rasteriser ./rasterise_text_windows.exe```
 1. A real‐world example is in the [Sampradaya typeface Makefile](https://github.com/deepestblue/Sampradaya/blob/main/windows/Makefile).
+
+## Releasing
+
+This section is for maintainers cutting a new release, not for consumers of alekhana.
+
+1. Bump the [`VERSION`](VERSION) file to the new version, using your judgment on major/minor/patch.
+1. `git add VERSION && git commit -m "Bump version to <new version>"`
+1. `git push origin main`
+1. `git tag -a v<new version> -m "v<new version>"`
+1. `git push origin v<new version>`
+
+Pushing the tag triggers the [release workflow](.github/workflows/release.yml), which builds both platforms, checks that `VERSION` on the tagged commit matches the tag, packages a per‐platform archive, and publishes a GitHub Release with those archives attached.
