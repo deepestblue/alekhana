@@ -18,13 +18,13 @@ On Windows, this tool depends on and bundles Microsoft's [TestApi library](https
 
 ### On MacOS
 
-1. If you prefer to grab pre‐built binaries, grab the [latest binaries](https://github.com/deepestblue/alekhana/releases/download/latest/alekhana_dist.zip), unzip them and change into the unzipped directory. Skip to Step 7.
-1. Grab the [latest tar.gz sources](https://github.com/deepestblue/alekhana/archive/refs/tags/latest.tar.gz).
-1. `tar xzvf alekhana-latest.tar.gz`
-1. `cd alekhana-latest/macos`
+1. Pick a [released version](https://github.com/deepestblue/alekhana/releases), referred to below as `vX.Y.Z`. If you prefer pre‐built binaries, grab that release's `alekhana-macos-vX.Y.Z.tar.gz` asset, untar it, and change into the extracted directory. Skip to Step 7.
+1. Otherwise, grab that version's [source tarball](https://github.com/deepestblue/alekhana/archive/refs/tags/vX.Y.Z.tar.gz), substituting the version you picked.
+1. `tar xzvf vX.Y.Z.tar.gz`
+1. `cd alekhana-X.Y.Z/macos` (GitHub drops the leading `v` from the extracted directory name)
 1. `make dist`
 1. `cd ../dist`
-1. The current directory contains the `alekhana` runtime artifacts.
+1. The current directory contains the `alekhana` runtime artifacts. Run `./generate_images --version` (or `run_tests --version`) to confirm which version you have.
 1. The intended workflow is to use the Bash script `generate_images` to generate a set of master images, and then to use `run_tests` to compare the rendering using the current typeface file against the masters.
 1. The test cases need to be organised as text files, all in a flat directory. Each line in each text file is a test string.
 1. To generate masters, use `generate_images` as below:
@@ -45,13 +45,13 @@ As an example,
 
 1. `Alekhana` requires Visual Studio Build tools (not the entire IDE, just the command line tools).
 1. Launch the x64 Native tools command shell.
-1. If you prefer to grab pre‐built binaries, grab the [latest binaries](https://github.com/deepestblue/alekhana/releases/download/latest/alekhana_dist.zip), unzip them and change into the unzipped directory. Skip to Step 9.
-1. Grab the [latest zip sources](https://github.com/deepestblue/alekhana/archive/refs/tags/latest.zip).
+1. Pick a [released version](https://github.com/deepestblue/alekhana/releases), referred to below as `vX.Y.Z`. If you prefer pre‐built binaries, grab that release's `alekhana-windows-vX.Y.Z.zip` asset, unzip it, and change into the extracted directory. Skip to Step 9.
+1. Otherwise, grab that version's [source zip](https://github.com/deepestblue/alekhana/archive/refs/tags/vX.Y.Z.zip), substituting the version you picked.
 1. Unzip the sources.
-1. `cd alekhana-latest\windows`
+1. `cd alekhana-X.Y.Z\windows` (GitHub drops the leading `v` from the extracted directory name)
 1. `nmake dist`
 1. `cd ..\dist`
-1. The current directory contains the `alekhana` runtime artifacts.
+1. The current directory contains the `alekhana` runtime artifacts. Run `powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ./generate_images.ps1 -Version` (or `run_tests.ps1 -Version`) to confirm which version you have.
 1. The intended workflow is to use the Powershell script `generate_images` to generate a set of master images, and then to use the Powershell script `run_tests` to compare the rendering using the current typeface file against the masters.
 1. The test cases need to be organised as text files, all in a flat directory. Each line in each text file is a test string.
 1. To generate masters, use `generate_images` as below:

@@ -1,6 +1,6 @@
 QTPATH := ${shell brew --prefix qt}
 BOOSTPATH := ${shell brew --prefix boost}
-CXXFLAGS := -O3 -std=c++26 -Weverything -Werror -Wfatal-errors -pedantic-errors -ftemplate-backtrace-limit=1 --system-header-prefix=boost/ -I${BOOSTPATH}/include -xobjective-c++ -Wno-poison-system-directories -Wno-c++98-compat -Wno-padded -Wno-unqualified-std-cast-call -Wno-nrvo
+CXXFLAGS := -O3 -std=c++26 -Weverything -Werror -Wfatal-errors -pedantic-errors -ftemplate-backtrace-limit=1 --system-header-prefix=boost/ -I${BOOSTPATH}/include -Wno-poison-system-directories -Wno-c++98-compat -Wno-padded -Wno-unqualified-std-cast-call -Wno-nrvo
 LDFLAGS := -Wfatal-errors
 QTOBJECTS := rasterise_text.o qt/rasterise_text_impl.o
 CORETEXTOBJECTS := rasterise_text.o coretext/rasterise_text_impl.o
@@ -16,15 +16,20 @@ qt/rasterise_text_impl.o: qt/rasterise_text_impl.cpp ../rasterise_text.hpp
 qt/rasterise_text: ${QTOBJECTS}
 	${CXX} ${LDFLAGS} ${QTOBJECTS} -F${QTPATH}/Frameworks -framework QtGui -framework QtCore -framework QtWidgets -o $@
 
+coretext/rasterise_text_impl.o: coretext/rasterise_text_impl.mm ../rasterise_text.hpp
+	${CXX} ${CXXFLAGS} -c coretext/rasterise_text_impl.mm -o $@
 coretext/rasterise_text: ${CORETEXTOBJECTS}
 	${CXX} ${LDFLAGS} ${CORETEXTOBJECTS} -framework ImageIO -framework CoreGraphics -framework CoreText -framework CoreServices -framework CoreFoundation -framework UniformTypeIdentifiers -o $@
 
 dist: build
+	${RM} -r ../dist
 	mkdir -p ../dist
 	cp qt/rasterise_text ../dist/rasterise_text_qt
 	cp coretext/rasterise_text ../dist/rasterise_text_coretext
 	cp generate_images ../dist/
 	cp run_tests ../dist/
+	cp ../VERSION ../dist/
+	cp ../LICENCE ../dist/
 
 clean:
 	${RM} -r ${QTOBJECTS} ${CORETEXTOBJECTS} ${BINS} dist/

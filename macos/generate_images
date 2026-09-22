@@ -5,6 +5,11 @@ set -o nounset
 
 SCRIPTDIR=$(dirname $0)
 
+if [ "${1:-}" = "--version" ]; then
+    cat $SCRIPTDIR/VERSION
+    exit 0
+fi
+
 while getopts r:d:t:c: OPTLET; do
   case $OPTLET in
     d)

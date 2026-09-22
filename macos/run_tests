@@ -11,6 +11,11 @@ TMPDIR=$(mktemp -d -t $PROGRAM)
 
 SCRIPTDIR=$(dirname $0)
 
+if [ "${1:-}" = "--version" ]; then
+    cat $SCRIPTDIR/VERSION
+    exit 0
+fi
+
 while getopts e:r:t:c: OPTLET; do
   case $OPTLET in
     e)

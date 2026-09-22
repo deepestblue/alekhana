@@ -5,13 +5,19 @@ using namespace Microsoft.Test.VisualVerification
 [CmdletBinding(PositionalBinding=$false)]
 
 Param(
-    [Parameter(Mandatory=$true)][string]$typefacePath,
-    [Parameter(Mandatory=$true)][string]$rasteriser,
-    [Parameter(Mandatory=$true)][string]$masterImages,
-    [Parameter(Mandatory=$true)][string]$testCases
+    [Parameter(Mandatory=$true, ParameterSetName="Run")][string]$typefacePath,
+    [Parameter(Mandatory=$true, ParameterSetName="Run")][string]$rasteriser,
+    [Parameter(Mandatory=$true, ParameterSetName="Run")][string]$masterImages,
+    [Parameter(Mandatory=$true, ParameterSetName="Run")][string]$testCases,
+    [Parameter(Mandatory=$true, ParameterSetName="Version")][switch]$version
 )
 
 $ErrorActionPreference="Stop"
+
+if ($PSCmdlet.ParameterSetName -eq "Version") {
+    Get-Content (Join-Path $PSScriptRoot "VERSION")
+    exit 0
+}
 
 Add-Type -Assembly System.Drawing
 [Reflection.Assembly]::LoadFile("$PSScriptRoot/TestApiCore.dll") | Out-Null

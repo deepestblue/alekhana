@@ -1,0 +1,6 @@
+alekhana is licensed under the GNU AGPL‐3.0 (see LICENCE).
+
+This package also bundles Microsoft's TestApi library (TestApiCore.dll,
+TestApiCore.pdb), used by run_tests.ps1 to compare rendered images. TestApi is
+licensed separately under the Microsoft Public License (see
+TestApiCore-LICENCE.txt), not the AGPL‐3.0.

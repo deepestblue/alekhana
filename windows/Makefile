@@ -21,11 +21,17 @@ regenerate_masters: rasterise_text.exe
 	$(PS) ./generate_images.ps1 -Rasteriser ./rasterise_text.exe -OutputRoot ./master_images -TypeFace $(TYPEFACEPATH)
 
 dist: build
+	$(PS) (Remove-Item -Force -Recurse ..\dist -ErrorAction Ignore)
 	if not exist ..\dist mkdir ..\dist
 	copy rasterise_text.exe ..\dist\rasterise_text_windows.exe
 	copy rasterise_text.pdb ..\dist\rasterise_text_windows.pdb
-	copy *.ps1 ..\dist
-	copy TestApiCore.* ..\dist
+	copy generate_images.ps1 ..\dist
+	copy run_tests.ps1 ..\dist
+	copy vendor\TestApiCore.* ..\dist
+	copy vendor\TestApiCore-LICENCE.txt ..\dist
+	copy ..\VERSION ..\dist
+	copy ..\LICENCE ..\dist
+	copy NOTICE ..\dist
 
 clean:
 	$(PS) (Remove-Item -Force rasterise_text.exe, rasterise_text.pdb, *.obj, ..\dist\* -ErrorAction Ignore)

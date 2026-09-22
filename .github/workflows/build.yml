@@ -1,18 +1,10 @@
 name: Build
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   build_macos:
@@ -59,40 +51,3 @@ jobs:
           name: Windows distrib
           path: dist/*
           retention-days: 1
-  package_and_release:
-    needs: [build_macos, build_windows]
-    name: Package up artifacts
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write # Required to create/update the "latest" release and upload assets.
-    steps:
-      - name: Download MacOS artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: MacOS distrib
-          path: alekhana_dist
-      - name: Download Windows artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: Windows distrib
-          path: alekhana_dist
-      # Workaround for https://github.com/actions/upload-artifact/issues/38
-      - name: Fix perms
-        run: chmod +x alekhana_dist/*
-      - name: Zip up artifacts
-        run: zip -r alekhana_dist.zip alekhana_dist
-      - name: Push latest release to Github
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if gh release view latest -R "${GITHUB_REPOSITORY}" >/dev/null; then
-            gh release upload latest alekhana_dist.zip --clobber -R "${GITHUB_REPOSITORY}"
-            gh release edit latest -R "${GITHUB_REPOSITORY}" \
-              --prerelease \
-              --title "Development Build"
-          else
-            gh release create latest alekhana_dist.zip -R "${GITHUB_REPOSITORY}" \
-              --prerelease \
-              --title "Development Build" \
-              --notes "Automated development build."
-          fi
